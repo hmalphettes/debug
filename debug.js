@@ -17,8 +17,12 @@
 			try {
 				throw new Error();
 			} catch(e) {
-				lines = e.stack.substr( e.stack.indexOf( 'console.log' ) ).split( /(\r\n|\n|\r)/gm )[2].trim().split(' ');
-				window.oldConsole.log( '%c >> ' + lines[ lines.length - 1 ] , 'color: red;' );
+				if (e.stack && e.stack.indexOf( 'console.log' ) !== -1) {
+					lines = e.stack.substr( e.stack.indexOf( 'console.log' ) ).split( /(\r\n|\n|\r)/gm )[2].trim().split(' ');
+					window.oldConsole.log( '%c >> ' + lines[ lines.length - 1 ] , 'color: red;' );
+				} else {
+					lines = [];
+				}
 			}
 			return '';
 		};
@@ -27,6 +31,12 @@
 		window.console = {
 			log: function () {
 				window.oldConsole.log( Array.prototype.slice.call(arguments), lineNumber() );
+			},
+			error: function() {
+				window.oldConsole.error( Array.prototype.slice.call(arguments), lineNumber() );
+			},
+			assert: function() {
+				window.oldConsole.assert( Array.prototype.slice.call(arguments), lineNumber() );
 			}
 		};
 
@@ -36,7 +46,7 @@
 	} else { //If console object does not exist.
 
 		//Degrade console object ( or write your own fallback code )
-		window.console = { log: function() {} };
+		window.console = { log: function() {}, assert: function() {} };
 		window.debug = function () {return;};
 	}
 
